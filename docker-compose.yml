@@ -63,7 +63,7 @@ services:
       POSTGRES_USER: warmbly
       POSTGRES_PASSWORD: warmbly
       POSTGRES_DB: warmbly_dev
-    ports: ["15432:5432"]
+    ports: ["127.0.0.1:15432:5432"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -74,7 +74,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports: ["16379:6379"]
+    ports: ["127.0.0.1:16379:6379"]
     volumes:
       - redis_data:/data
     healthcheck:
@@ -87,7 +87,7 @@ services:
     image: nats:2.10-alpine
     # -js: JetStream (durable streams). -m 8222: HTTP monitoring for healthcheck.
     command: ["-js", "-sd", "/data", "-m", "8222"]
-    ports: ["4222:4222", "8222:8222"]
+    ports: ["127.0.0.1:4222:4222", "127.0.0.1:8222:8222"]
     volumes:
       - nats_data:/data
     healthcheck:
@@ -101,8 +101,8 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     ports:
-      - "18025:8025"
-      - "11025:1025"
+      - "127.0.0.1:18025:8025"
+      - "127.0.0.1:11025:1025"
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
@@ -133,11 +133,12 @@ services:
     build:
       context: .
       dockerfile: deploy/docker/backend.Dockerfile
-    ports: ["8080:8080"]
+    ports: ["127.0.0.1:8080:8080"]
     environment:
       <<: *selfhost-env
       API_HOST: "0.0.0.0:8080"
       GIN_MODE: release
+      AUTH_CODE_BYPASS: "true"
       # To reach Warmbly from another machine, set PUBLIC_HOST=<ip-or-domain> in
       # .env — every URL below derives from it. Or set each URL explicitly.
       APP_URL: ${APP_URL:-http://${PUBLIC_HOST:-localhost}:5173}
@@ -209,7 +210,7 @@ services:
     build:
       context: ./tracking
       dockerfile: Dockerfile
-    ports: ["3000:3000"]
+    ports: ["127.0.0.1:3000:3000"]
     environment:
       APP_ENV: ${APP_ENV:-dev}
       AWS_CONFIG_ENABLED: "false"
@@ -231,7 +232,7 @@ services:
     build:
       context: .
       dockerfile: deploy/docker/realtime.Dockerfile
-    ports: ["4000:4000"]
+    ports: ["127.0.0.1:4000:4000"]
     environment:
       PHX_HOST: ${PHX_HOST:-${PUBLIC_HOST:-localhost}}
       PORT: 4000
@@ -256,7 +257,7 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
-    ports: ["5173:80"]
+    ports: ["127.0.0.1:5173:80"]
     environment:
       WARMBLY_API_URL: ${API_PUBLIC_URL:-http://${PUBLIC_HOST:-localhost}:8080}
       WARMBLY_APP_URL: ${APP_URL:-http://${PUBLIC_HOST:-localhost}:5173}
@@ -271,7 +272,7 @@ services:
     build:
       context: ./admin
       dockerfile: Dockerfile
-    ports: ["5174:80"]
+    ports: ["127.0.0.1:5174:80"]
     environment:
       WARMBLY_API_URL: ${API_PUBLIC_URL:-http://${PUBLIC_HOST:-localhost}:8080}
       WARMBLY_DASHBOARD_URL: ${APP_URL:-http://${PUBLIC_HOST:-localhost}:5173}
